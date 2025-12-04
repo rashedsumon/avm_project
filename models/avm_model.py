@@ -1,5 +1,6 @@
 import pandas as pd
 import xgboost as xgb
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
@@ -30,12 +31,19 @@ def train_model():
     model = xgb.XGBRegressor()
     model.fit(X_train, y_train)
     
+    # Save the model to a file
+    joblib.dump(model, 'avm_model.pkl')
+    
     # Make predictions and evaluate
     y_pred = model.predict(X_test)
     mae = mean_absolute_error(y_test, y_pred)
     print(f"Model Evaluation (MAE): {mae:.2f}")
     
     return model
+
+# Function to load the trained model
+def load_trained_model():
+    return joblib.load('avm_model.pkl')
 
 # Function to predict price based on user input
 def predict_price(model, location, area, rooms, year_built, renovation_level):
@@ -48,7 +56,7 @@ def predict_price(model, location, area, rooms, year_built, renovation_level):
         'renovation_level': [renovation_level]
     })
     
-    # Apply the same preprocessing steps as in training
+    # Apply the same preprocessing steps as in training (one-hot encoding)
     input_data = pd.get_dummies(input_data, drop_first=True)
     
     # Ensure input matches training data features
@@ -57,3 +65,13 @@ def predict_price(model, location, area, rooms, year_built, renovation_level):
     # Predict the price
     price = model.predict(input_data)
     return price[0]
+
+# Function to train and load model (if not already loaded)
+def get_model():
+    try:
+        # Try loading the model from the file
+        model = load_trained_model()
+    except FileNotFoundError:
+        # If model is not found, train a new one
+        model = train_model()
+    return model
