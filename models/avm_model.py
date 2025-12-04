@@ -1,13 +1,23 @@
 import pandas as pd
 import xgboost as xgb
-import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 
-# Function to load and preprocess the dataset
+# Function to load and preprocess the dataset (hardcoded data instead of CSV)
 def load_data():
-    data = pd.read_csv("data/dataset.csv")  # This assumes the dataset is downloaded and cleaned
-    data = data.dropna()  # Drop missing values for simplicity
+    # Hardcoded dataset example (you can add more data as needed)
+    data = {
+        'location': ['New York', 'San Francisco', 'Chicago', 'Los Angeles', 'Houston'],
+        'area': [1000, 1200, 900, 1500, 1100],
+        'rooms': [2, 3, 2, 4, 3],
+        'year_built': [2000, 2010, 1995, 2015, 2005],
+        'renovation_level': ['Minor', 'Major', 'None', 'Minor', 'Major'],
+        'price': [500000, 800000, 350000, 750000, 600000]
+    }
+    
+    # Convert to a DataFrame
+    data = pd.DataFrame(data)
+    
     return data
 
 # Function to train the model
@@ -31,19 +41,12 @@ def train_model():
     model = xgb.XGBRegressor()
     model.fit(X_train, y_train)
     
-    # Save the model to a file
-    joblib.dump(model, 'avm_model.pkl')
-    
     # Make predictions and evaluate
     y_pred = model.predict(X_test)
     mae = mean_absolute_error(y_test, y_pred)
     print(f"Model Evaluation (MAE): {mae:.2f}")
     
     return model
-
-# Function to load the trained model
-def load_trained_model():
-    return joblib.load('avm_model.pkl')
 
 # Function to predict price based on user input
 def predict_price(model, location, area, rooms, year_built, renovation_level):
@@ -75,3 +78,7 @@ def get_model():
         # If model is not found, train a new one
         model = train_model()
     return model
+
+# If running as Streamlit app
+if __name__ == "__main__":
+    model = train_model()  # Train the model or use a saved model
